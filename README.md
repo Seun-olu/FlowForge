@@ -17,7 +17,8 @@ Visual workflow automation and approvals: build a workflow on a canvas, publish 
 | Approval inbox with comments | Tested (Playwright) |
 | Audit history (admins) | Tested (Playwright) |
 | Worker endpoint `POST /api/worker` for due retries (`FOR UPDATE SKIP LOCKED`) | Logic tested via `processDue` in PGlite; route itself not exercised |
-| Hosted Postgres driver (`DATABASE_URL`, postgres.js) | Implemented, not tested |
+| Hosted Postgres driver (`DATABASE_URL`, postgres.js) with auto-migrate | Same code path as StreamOS (tested there over the Postgres wire protocol); not tested against Neon or Supabase |
+| Netlify serverless (demo mode in `/tmp`) | Tested by simulating the Lambda environment locally; sign-up, create org |
 
 ## How it works
 
@@ -59,9 +60,19 @@ Environment variables (all optional locally):
 | Var | Purpose |
 |---|---|
 | `SESSION_SECRET` | 32+ chars; required when `NODE_ENV=production` |
-| `DATABASE_URL` | Use a hosted Postgres instead of PGlite (apply `db/migrations` first) |
+| `DATABASE_URL` / `NETLIFY_DATABASE_URL` | Use a hosted Postgres instead of PGlite (migrations run automatically) |
 | `PGLITE_DIR` | Where PGlite stores data (default `.data/pglite`) |
 | `WORKER_SECRET` | Enables `POST /api/worker` (Bearer token) |
+
+## Deploying on Netlify
+
+The site deploys as-is: Netlify's Next.js runtime builds it, and `next.config.ts` bundles the SQL migrations and PGlite files into the server function.
+
+- **Without a database** (the default), the app runs in **demo mode**: the embedded database lives in the function's `/tmp`, so accounts and changes reset whenever Netlify recycles the function. A banner tells visitors.
+- **For permanent data**, connect a Postgres database:
+  - In Netlify, add the Neon extension or Netlify DB; it sets `NETLIFY_DATABASE_URL`. Any Postgres works through `DATABASE_URL` instead.
+  - Also set `SESSION_SECRET` to a random string of 32+ characters (for example from `openssl rand -base64 48`). Production refuses to start without one once a database is connected.
+  - Then redeploy. Migrations, and the demo seed where there is one, run automatically on first connection. `DATABASE_POOL_MAX` caps connections; the default is 5.
 
 ## Tests
 

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-/** Cheap gate: no session cookie → login. The signature is verified server-side in getUser(). */
+/** Cheap gate for the app areas: no session cookie → login. The signature is verified server-side in getUser(). */
 export function proxy(req: NextRequest) {
   if (!req.cookies.has("ff_session")) {
     const url = req.nextUrl.clone();
@@ -11,4 +11,4 @@ export function proxy(req: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = { matcher: ["/((?!login|signup|api/worker|_next|favicon.ico).*)"] };
+export const config = { matcher: ["/app", "/o/:path*", "/orgs/:path*"] };

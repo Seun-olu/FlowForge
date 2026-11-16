@@ -31,7 +31,7 @@ export async function signUp(_: FormState, form: FormData): Promise<FormState> {
   const id = await createAccount(await getDb(), parsed.data.email, parsed.data.password, parsed.data.name);
   if (!id) return { error: "An account with that email already exists" };
   await setSession(id);
-  redirect("/");
+  redirect("/app");
 }
 
 export async function signIn(_: FormState, form: FormData): Promise<FormState> {
@@ -40,7 +40,7 @@ export async function signIn(_: FormState, form: FormData): Promise<FormState> {
   const id = await checkCredentials(await getDb(), parsed.data.email, parsed.data.password);
   if (!id) return { error: "Email or password is incorrect" };
   await setSession(id);
-  redirect("/");
+  redirect("/app");
 }
 
 export async function signOut() {

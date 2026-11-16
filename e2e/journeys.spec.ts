@@ -31,6 +31,16 @@ test.describe.serial("FlowForge core journeys", () => {
   let orgUrl = "";
   let workflowUrl = "";
 
+  test("public landing page explains the product and leads to sign-up", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("heading", { level: 1, name: /Approval workflows you can see/ })).toBeVisible();
+    await expect(page.getByRole("figure", { name: /Example workflow/ })).toBeVisible();
+    await page.getByRole("link", { name: "Create a free account" }).click();
+    await expect(page).toHaveURL(/\/signup$/);
+    await page.getByRole("link", { name: "← FlowForge home" }).click();
+    await expect(page).toHaveURL(/\/$/);
+  });
+
   test("unauthenticated users are sent to login", async ({ page }) => {
     await page.goto("/orgs");
     await expect(page).toHaveURL(/\/login$/);
