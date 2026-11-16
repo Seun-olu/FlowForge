@@ -18,7 +18,7 @@ Visual workflow automation and approvals: build a workflow on a canvas, publish 
 | Audit history (admins) | Tested (Playwright) |
 | Worker endpoint `POST /api/worker` for due retries (`FOR UPDATE SKIP LOCKED`) | Logic tested via `processDue` in PGlite; route itself not exercised |
 | Hosted Postgres driver (`DATABASE_URL`, postgres.js) with auto-migrate | Same code path as StreamOS (tested there over the Postgres wire protocol); not tested against Neon or Supabase |
-| Netlify serverless (demo mode in `/tmp`) | Tested by simulating the Lambda environment locally; sign-up, create org |
+| Netlify serverless without a database (preview mode) | Live landing page checked; accounts are switched off until a database is connected |
 
 ## How it works
 
@@ -68,7 +68,7 @@ Environment variables (all optional locally):
 
 The site deploys as-is: Netlify's Next.js runtime builds it, and `next.config.ts` bundles the SQL migrations and PGlite files into the server function.
 
-- **Without a database** (the default), the app runs in **demo mode**: the embedded database lives in the function's `/tmp`, so accounts and changes reset whenever Netlify recycles the function. A banner tells visitors.
+- **Without a database** (the default), the app runs in **preview mode**: the embedded database lives in each function instance's `/tmp`. Netlify runs several instances, so accounts can't work reliably. Sign-up and sign-in are therefore switched off, with a clear notice, while public pages keep working (seeded content in StreamOS; the landing page in FlowForge).
 - **For permanent data**, connect a Postgres database:
   - In Netlify, add the Neon extension or Netlify DB; it sets `NETLIFY_DATABASE_URL`. Any Postgres works through `DATABASE_URL` instead.
   - Also set `SESSION_SECRET` to a random string of 32+ characters (for example from `openssl rand -base64 48`). Production refuses to start without one once a database is connected.

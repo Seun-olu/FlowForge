@@ -13,7 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen">
       {isEphemeralDemo() && (
         <div role="note" className="bg-amber-100 px-4 py-2 text-center text-sm text-amber-950">
-          Demo mode: this deployment has no permanent database yet, so accounts and changes can reset at any time.
+          Preview: sign-up opens once this deployment is connected to a database.
         </div>
       )}
         {children}

@@ -6,7 +6,7 @@ import { z } from "zod";
 import { e, n, purchaseGraph } from "@/engine/fixtures";
 import type { ValidationIssue } from "@/engine/graph";
 import { checkCredentials, clearSession, createAccount, requireUser, setSession } from "@/server/auth";
-import { asOwner, getDb } from "@/server/db";
+import { asOwner, getDb, isEphemeralDemo } from "@/server/db";
 import { ROLES, withUser } from "@/server/queries";
 import { cancelExecution, decideApproval, publish, resumeExecution, RunnerError, saveDraft, startExecution } from "@/server/runner";
 
@@ -26,6 +26,8 @@ const credentials = z.object({
 });
 
 export async function signUp(_: FormState, form: FormData): Promise<FormState> {
+  // Each serverless instance would have its own throwaway database, so accounts can't work reliably.
+  if (isEphemeralDemo()) return { error: "Sign-in is switched off on this preview deployment until it is connected to a database." };
   const parsed = credentials.extend({ name: z.string().trim().min(1, "Name is required").max(80) }).safeParse(Object.fromEntries(form));
   if (!parsed.success) return { error: parsed.error.issues[0]!.message };
   const id = await createAccount(await getDb(), parsed.data.email, parsed.data.password, parsed.data.name);
@@ -35,6 +37,8 @@ export async function signUp(_: FormState, form: FormData): Promise<FormState> {
 }
 
 export async function signIn(_: FormState, form: FormData): Promise<FormState> {
+  // Each serverless instance would have its own throwaway database, so accounts can't work reliably.
+  if (isEphemeralDemo()) return { error: "Sign-in is switched off on this preview deployment until it is connected to a database." };
   const parsed = credentials.safeParse(Object.fromEntries(form));
   if (!parsed.success) return { error: "Email or password is incorrect" };
   const id = await checkCredentials(await getDb(), parsed.data.email, parsed.data.password);
